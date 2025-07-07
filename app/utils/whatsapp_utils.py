@@ -2,10 +2,8 @@ import logging
 from flask import current_app, jsonify
 import json
 import requests
-
-# from app.services.openai_service import generate_response
+from app.services.openai_service import generate_response
 import re
-
 
 def log_http_response(response):
     logging.info(f"Status: {response.status_code}")
@@ -24,10 +22,6 @@ def get_text_message_input(recipient, text):
         }
     )
 
-
-def generate_response(response):
-    # Return text in uppercase
-    return response.upper()
 
 
 def send_message(data):
@@ -75,6 +69,47 @@ def process_text_for_whatsapp(text):
     return whatsapp_style_text
 
 
+"""def process_whatsapp_message(body):
+    wa_id = body["entry"][0]["changes"][0]["value"]["contacts"][0]["wa_id"]
+    name = body["entry"][0]["changes"][0]["value"]["contacts"][0]["profile"]["name"]
+
+    message = body["entry"][0]["changes"][0]["value"]["messages"][0]
+    user_input = message["text"]["body"]
+
+    # Log user message
+    log_time()
+    log_user_input(user_input)
+
+    # Classify user intent using LLM
+    task = classify_intent(data_status=False)
+    print(task)
+    task = json.loads(task)
+    print(type(task))
+
+    if task["type"]:
+        if "fetching_pending_scheduled_tasks" in task["type"]:
+            log_time()
+            log_bot_response(task["message"])
+            send_message(get_text_message_input(current_app.config["RECIPIENT_WAID"], task["message"]))
+            task = classify_intent(data_status=True)
+            task = json.loads(task)
+            log_time()
+            log_bot_response(task["message"])
+            send_message(get_text_message_input(current_app.config["RECIPIENT_WAID"], task["message"]))
+        else:
+            print("scheduling job ...")
+            unique_id = 10
+            schedule_job(current_app.config["RECIPIENT_WAID"], task, unique_id)
+            log_time()
+            log_bot_response("Bot: I have successfully scheduled your reminder. Can I do anything else for you?")
+            send_message(get_text_message_input(current_app.config["RECIPIENT_WAID"], "I have successfully scheduled your reminder\nCan I do anything else for you?"))
+            print("scheduled job")                
+            unique_id = unique_id + 10
+    else:
+        log_time()
+        log_bot_response(task["message"])
+        send_message(get_text_message_input(current_app.config["RECIPIENT_WAID"], task["message"]))
+"""
 def process_whatsapp_message(body):
     wa_id = body["entry"][0]["changes"][0]["value"]["contacts"][0]["wa_id"]
     name = body["entry"][0]["changes"][0]["value"]["contacts"][0]["profile"]["name"]
@@ -82,14 +117,10 @@ def process_whatsapp_message(body):
     message = body["entry"][0]["changes"][0]["value"]["messages"][0]
     message_body = message["text"]["body"]
 
-    # TODO: implement custom function here
-    response = generate_response(message_body)
-
     # OpenAI Integration
-    # response = generate_response(message_body, wa_id, name)
-    # response = process_text_for_whatsapp(response)
-
-    data = get_text_message_input(current_app.config["RECIPIENT_WAID"], response)
+    response = generate_response(message_body, wa_id, name)
+    response = process_text_for_whatsapp(response)
+    data = get_text_message_input(wa_id, response)
     send_message(data)
 
 
