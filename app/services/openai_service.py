@@ -118,6 +118,7 @@ def create_assistant():
         instructions=system_prompt,
         tools=tools,
         model="gpt-4o-mini-2024-07-18",
+        temprature=0.3
     )
     return assistant
 
